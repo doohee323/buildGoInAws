@@ -1,0 +1,15 @@
+accesskey=
+secretkey=
+instanceNum=1
+ami_id=ami-6ca2c80c
+spot_price=0.3
+
+common_spec=m3.medium
+spot_spec=m3.medium
+key=golang2
+security_group=golang2
+region=us-west-1
+
+username=ubuntu
+pem_file=ubuntu
+
