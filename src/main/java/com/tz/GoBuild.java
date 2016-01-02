@@ -2,14 +2,10 @@ package com.tz;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
 import org.slf4j.LoggerFactory;
 
 public class GoBuild {
@@ -31,10 +27,9 @@ public class GoBuild {
 	private String region = "";
 
 	private String username = "";
-	private String host = "";
 	private String pem_file = "";
-	
-	private List instanceIds = new ArrayList();
+
+	private List<String> instanceIds = new ArrayList<String>();
 
 	// 0) create master
 	public static void main(String[] arg) {
@@ -67,7 +62,7 @@ public class GoBuild {
 		key = config.getProperty("key");
 		security_group = config.getProperty("security_group");
 		region = config.getProperty("region");
-		
+
 		username = config.getProperty("username");
 		pem_file = config.getProperty("pem_file");
 	}
@@ -126,18 +121,18 @@ public class GoBuild {
 	public void runApp(String arg) throws Exception {
 		Map<String, String> hostInfo = new HashMap<String, String>();
 		hostInfo.put("username", username);
-		hostInfo.put("pem_file", pem_file);
+		hostInfo.put("key_file", pem_file);
 
+		// 4. execute script.
 		for (int i = 0; i < instanceIds.size(); i++) {
-			String cmd = "ec2-describe-instances " + instanceIds.get(i) + " --region=" + region; 
-			String rslt = CmdUtil.execUnixCommand(cmd);
-			
-			hostInfo.put("host", host);
+			hostInfo.put("host", getInstanceId(instanceIds.get(i)));
 			List<String> commands = new ArrayList<String>();
-			commands.add("ls -al");
+			String cmd2 = "ls -al";
+			commands.add(cmd2);
+			commands.add("finish!");
 
 			SSHUtil util = new SSHUtil();
-			rslt = util.shell(hostInfo, commands);
+			util.shell(hostInfo, commands);
 		}
 
 		// 5. delete instances
@@ -154,7 +149,7 @@ public class GoBuild {
 		}
 	}
 
-	public String replaceVariables(String orgStr, Map<String, Object> var) {
+	private String replaceVariables(String orgStr, Map<String, Object> var) {
 		if (var != null) {
 			Object[] key = var.keySet().toArray();
 			for (int i = 0; i < key.length; i++) {
@@ -168,7 +163,18 @@ public class GoBuild {
 		return orgStr;
 	}
 
-	public int checkInstance(String instanceType) {
+	private String getInstanceId(String instanceId) {
+		String rslt = null;
+		try {
+			String cmd = "ec2-describe-instances " + instanceId + " --region=" + region;
+			rslt = CmdUtil.execUnixCommand(cmd);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return rslt.split("\t")[6];
+	}
+
+	private int checkInstance(String instanceType) {
 		// 1. checking exist of request
 		try {
 			String cmd = "", splitFlag = "";
@@ -176,25 +182,20 @@ public class GoBuild {
 				cmd = "ec2-describe-instances --filter \"tag:Name=golang_WORKER*\"";
 				splitFlag = "RESERVATION";
 			} else if (instanceType.equals("spot")) {
-				cmd = "/usr/local/bin/aws ec2 describe-spot-instance-requests";
+				cmd = "ec2-describe-spot-instance-requests --region " + region;
 				splitFlag = "SPOTINSTANCEREQUEST";
 			}
 			String rslt = CmdUtil.execUnixCommand(cmd);
-			if(rslt.length() > 0) {
-				JSONParser parser = new JSONParser();
-				if (instanceType.equals("common")) {
-				} else if (instanceType.equals("spot")) {
-					JSONArray jsonArry = (JSONArray) ((JSONObject) parser.parse(rslt)).get("SpotInstanceRequests");
-					Iterator itr = jsonArry.iterator();
-					while (itr.hasNext()) {
-						JSONObject featureJsonObj = (JSONObject) itr.next();
-						String state = featureJsonObj.get("State").toString();
-						JSONObject info = (JSONObject) featureJsonObj.get("LaunchSpecification");
-						String keyName = info.get("KeyName").toString();
-						if (state.equals("active") && keyName.equals("golang2")) {
-							instanceIds.add(featureJsonObj.get("InstanceId").toString());
-						}
+			String arry[] = rslt.split(splitFlag);
+			for (int i = 0; i < arry.length; i++) {
+				if (!arry[i].equals("") && arry[i].indexOf("terminated") == -1) {
+					if (instanceType.equals("common")) {
+						arry[i] = arry[i].substring(arry[i].indexOf("INSTANCE") + "INSTANCE ".length(),
+								arry[i].length());
+					} else if (instanceType.equals("spot")) {
+						arry[i] = arry[i].split("\t")[11];
 					}
+					instanceIds.add(arry[i]);
 				}
 			}
 		} catch (Exception e) {
@@ -207,40 +208,6 @@ public class GoBuild {
 				return nInstanceNum;
 			}
 		}
-
-		// // 1.1 checking
-		// DefaultHttpClient httpClient = new DefaultHttpClient();
-		// StringBuilder result = new StringBuilder();
-		// try {
-		// String url = "http://" + master_external_ip + ":26080/cluster.jsp";
-		// HttpGet postRequest = new HttpGet(url);
-		// postRequest.addHeader("Content-Type", "application/json");
-		// HttpResponse response = httpClient.execute(postRequest);
-		// if (response.getStatusLine().getStatusCode() != 200) {
-		// System.out.println("fail sending url => " + url);
-		// throw new RuntimeException("Failed : HTTP error code : " +
-		// response.getStatusLine().getStatusCode());
-		// }
-		// BufferedReader br = new BufferedReader(new
-		// InputStreamReader((response.getEntity().getContent())));
-		// String output;
-		// while ((output = br.readLine()) != null) {
-		// result.append(output);
-		// }
-		// String tmp = result.toString();
-		// if (tmp.indexOf("<h2>Worker</h2>") > -1) {
-		// tmp = tmp.substring(tmp.indexOf("<h2>Worker</h2>"), tmp.length());
-		// tmp = tmp.substring(tmp.indexOf(":") + 1, tmp.length());
-		// tmp = tmp.substring(0, tmp.indexOf(","));
-		// }
-		// if (tmp.length() > 0) {
-		// return Integer.parseInt(tmp);
-		// }
-		// } catch (ClientProtocolException e) {
-		// e.printStackTrace();
-		// } catch (IOException e) {
-		// e.printStackTrace();
-		// }
 		return -1;
 	}
 }

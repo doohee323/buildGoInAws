@@ -31,8 +31,6 @@ public final class ConfigUtil {
 
 	static final Logger log = LoggerFactory.getLogger(ConfigUtil.class);
 
-	public static String defaultConfDir = "";
-
 	public static Reader getFileReader(String fileNm) {
 		Reader reader = null;
 		try {
@@ -47,8 +45,6 @@ public final class ConfigUtil {
 		try {
 			if (new File(fileNm).exists()) {
 				return new FileInputStream(fileNm);
-			} else if (new File(defaultConfDir + fileNm).exists()) {
-				return new FileInputStream(defaultConfDir + fileNm);
 			} else {
 				return ConfigUtil.class.getClassLoader().getResourceAsStream(fileNm);
 			}
@@ -62,8 +58,6 @@ public final class ConfigUtil {
 		try {
 			if (new File(fileNm).exists()) {
 				return fileNm;
-			} else if (new File(defaultConfDir + fileNm).exists()) {
-				return defaultConfDir + fileNm;
 			} else {
 				return ConfigUtil.class.getClassLoader().getResource(fileNm).getPath();
 			}
