@@ -6,11 +6,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class GoBuild {
-
-	private org.slf4j.Logger Logger = LoggerFactory.getLogger(GoBuild.class);
+	private static Logger logger = LoggerFactory.getLogger(GoBuild.class);
 
 	private String accesskey = "";
 	private String secretkey = "";
@@ -28,6 +30,7 @@ public class GoBuild {
 
 	private String username = "";
 	private String pem_file = "";
+	private String cmd_file = "";
 
 	private List<String> instanceIds = new ArrayList<String>();
 
@@ -35,18 +38,20 @@ public class GoBuild {
 	public static void main(String[] arg) {
 		try {
 			String instanceType = "spot"; // common / spot
-			GoBuild golang = new GoBuild();
-			golang.init();
-			golang.getInstance(instanceType);
-			golang.runApp("BUILD");
+			GoBuild gobuild = new GoBuild();
+			gobuild.init();
+			gobuild.getInstance(instanceType);
+			gobuild.runApp("ls_tmp");
+			gobuild.terminateInstance();
 		} catch (Exception e) {
+			logger.error(e.getMessage());
 			e.printStackTrace();
 		}
 	}
 
 	public void init() {
-		String logConfigFile = "golang.property";
-		Properties config = ConfigUtil.getProperty(logConfigFile);
+		String configFile = "application.property";
+		Properties config = ConfigUtil.getProperty(configFile);
 
 		accesskey = config.getProperty("accesskey");
 		secretkey = config.getProperty("secretkey");
@@ -65,6 +70,7 @@ public class GoBuild {
 
 		username = config.getProperty("username");
 		pem_file = config.getProperty("pem_file");
+		cmd_file = config.getProperty("cmd_file");
 	}
 
 	public int getInstance(String instanceType) {
@@ -112,37 +118,49 @@ public class GoBuild {
 				return nCode;
 			}
 		} catch (Exception e) {
+			logger.error(e.getMessage());
 			e.printStackTrace();
 		}
 		return -1;
 	}
 
 	// 3. execute app.
-	public void runApp(String arg) throws Exception {
+	public void runApp(String id) throws Exception {
 		Map<String, String> hostInfo = new HashMap<String, String>();
 		hostInfo.put("username", username);
-		hostInfo.put("key_file", pem_file);
+		hostInfo.put("pem_file", pem_file);
 
-		// 4. execute script.
-		for (int i = 0; i < instanceIds.size(); i++) {
-			hostInfo.put("host", getInstanceId(instanceIds.get(i)));
-			List<String> commands = new ArrayList<String>();
-			String cmd2 = "ls -al";
-			commands.add(cmd2);
-			commands.add("finish!");
-
-			SSHUtil util = new SSHUtil();
-			util.shell(hostInfo, commands);
+		JSONArray jarry = ConfigUtil.getConfig(cmd_file);
+		for (Object object : jarry) {
+			JSONObject aJson = (JSONObject) object;
+			if (id.equals(aJson.get("id").toString())) {
+				JSONArray commands = (JSONArray) aJson.get("commands");
+				List<String> commands2 = new ArrayList<String>();
+				for (Object cmd2 : commands) {
+					logger.debug("=[input]=========" + cmd2.toString());
+					commands2.add(cmd2.toString());
+					commands2.add("finish!");
+				}
+				// 4. execute script.
+				for (int i = 0; i < instanceIds.size(); i++) {
+					hostInfo.put("host", getInstanceId(instanceIds.get(i)));
+					SSHUtil util = new SSHUtil();
+					String output = util.shell(hostInfo, commands2);
+					logger.debug("=[output]=========" + output);
+				}
+			}
 		}
-
-		// 5. delete instances
+	}
+	
+	// 5. delete instances
+	public void terminateInstance() throws Exception {
 		for (int i = 0; i < instanceIds.size(); i++) {
 			String str = instanceIds.get(i).toString();
 			if (str.indexOf("\tfulfilled\t") > -1) {
 				String instanceId = str.split("\t")[11];
+				String cmd = null;
 				if (instanceId.trim().startsWith("i-")) {
-					String cmd = "ec2-terminate-instances " + instanceId;
-					System.out.println(cmd);
+					cmd = "ec2-terminate-instances " + instanceId + " --region=" + region;
 					CmdUtil.execUnixCommand(cmd);
 				}
 			}
@@ -163,12 +181,14 @@ public class GoBuild {
 		return orgStr;
 	}
 
-	private String getInstanceId(String instanceId) {
+	private String getInstanceId(String instanceInfo) {
 		String rslt = null;
 		try {
+			String instanceId = instanceInfo.split("\t")[11];
 			String cmd = "ec2-describe-instances " + instanceId + " --region=" + region;
 			rslt = CmdUtil.execUnixCommand(cmd);
 		} catch (Exception e) {
+			logger.error(e.getMessage());
 			e.printStackTrace();
 		}
 		return rslt.split("\t")[6];
@@ -193,12 +213,13 @@ public class GoBuild {
 						arry[i] = arry[i].substring(arry[i].indexOf("INSTANCE") + "INSTANCE ".length(),
 								arry[i].length());
 					} else if (instanceType.equals("spot")) {
-						arry[i] = arry[i].split("\t")[11];
+						arry[i] = arry[i].substring(0, arry[i].indexOf(" "));
 					}
 					instanceIds.add(arry[i]);
 				}
 			}
 		} catch (Exception e) {
+			logger.error(e.getMessage());
 			e.printStackTrace();
 		}
 		if (instanceIds.size() == 0) {

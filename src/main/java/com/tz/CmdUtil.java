@@ -7,12 +7,17 @@ import java.io.InputStreamReader;
 import java.io.SequenceInputStream;
 import java.util.HashMap;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * </pre>
  * 
  * @version 1.0
  */
 public class CmdUtil {
+
+	private static Logger logger = LoggerFactory.getLogger(CmdUtil.class);
 
 	/**
 	 * <pre>
@@ -23,7 +28,7 @@ public class CmdUtil {
 	 */
 	public static boolean checkUnix() {
 		String osName = " " + System.getProperty("os.name");
-		System.out.println("checkUnix command:" + osName);
+		logger.debug("checkUnix command:" + osName);
 		if (osName.indexOf("Solaris") > 0)
 			return true;
 		if (osName.indexOf("AIX") > 0)
@@ -47,13 +52,13 @@ public class CmdUtil {
 	 */
 	public static void execCommand(HashMap<String, String> input) throws Exception {
 		String command = input.get("command").toString();
-		System.out.println("execUnixCommand command:" + command);
+		logger.debug("execUnixCommand command:" + command);
 
 		try {
 			Runtime rt = Runtime.getRuntime();
 			rt.exec(command);
 		} catch (Exception e) {
-			System.out.println("execCommand return1 :" + e.getMessage());
+			logger.error("execCommand return1 :" + e.getMessage());
 			throw new Exception("execCommand command error 1!!!:" + command);
 		}
 	}
@@ -68,12 +73,12 @@ public class CmdUtil {
 	 * @throws Exception
 	 */
 	public static String execUnixCommand(String command) throws Exception {
-		System.out.println("execUnixCommand command:" + command);
+		logger.debug("execUnixCommand command:" + command);
 		// ProcessBuilder pb = new ProcessBuilder();
 		// Map<String, String> envMap = pb.environment();
 		// Set<String> keys = envMap.keySet();
 		// for (String key : keys) {
-		// System.out.println(key + " ==> " + envMap.get(key));
+		// logger.debug(key + " ==> " + envMap.get(key));
 		// }
 		StringBuffer strReturn = new StringBuffer();
 		Runtime rt = Runtime.getRuntime();
@@ -82,9 +87,9 @@ public class CmdUtil {
 			String[] cmd = { "/bin/bash", "-c", command };
 			ps = rt.exec(cmd);
 			int n = ps.waitFor();
-			System.out.println("exec result code:" + n);
+			logger.debug("exec result code:" + n);
 		} catch (Exception e) {
-			System.out.println("execUnixCommand return1 :" + e.getMessage());
+			logger.error("execUnixCommand return1 :" + e.getMessage());
 			throw new Exception("execUnixCommand command error 1!!!:" + command);
 		}
 
@@ -97,15 +102,14 @@ public class CmdUtil {
 					strReturn.append(readLine).append("\n");
 				}
 			} catch (IOException e) {
-				System.out.println("execUnixCommand return2 :" + e.getMessage());
+				logger.error("execUnixCommand return2 :" + e.getMessage());
 				throw new Exception("execUnixCommand command error 2!!!:" + command);
 			}
-			System.out.println("execUnixCommand return :" + strReturn);
+			logger.debug("execUnixCommand return :" + strReturn);
 		}
 		return strReturn.toString();
 	}
-	
-	
+
 	/**
 	 * <pre>
 	 * </pre>
@@ -116,12 +120,12 @@ public class CmdUtil {
 	 * @throws Exception
 	 */
 	public static String execRemoteCommand(String command) throws Exception {
-		System.out.println("execUnixCommand command:" + command);
+		logger.debug("execUnixCommand command:" + command);
 		// ProcessBuilder pb = new ProcessBuilder();
 		// Map<String, String> envMap = pb.environment();
 		// Set<String> keys = envMap.keySet();
 		// for (String key : keys) {
-		// System.out.println(key + " ==> " + envMap.get(key));
+		// logger.debug(key + " ==> " + envMap.get(key));
 		// }
 		StringBuffer strReturn = new StringBuffer();
 		Runtime rt = Runtime.getRuntime();
@@ -130,9 +134,9 @@ public class CmdUtil {
 			String[] cmd = { "/bin/bash", "-c", command };
 			ps = rt.exec(cmd);
 			int n = ps.waitFor();
-			System.out.println("exec result code:" + n);
+			logger.debug("exec result code:" + n);
 		} catch (Exception e) {
-			System.out.println("execUnixCommand return1 :" + e.getMessage());
+			logger.error("execUnixCommand return1 :" + e.getMessage());
 			throw new Exception("execUnixCommand command error 1!!!:" + command);
 		}
 
@@ -145,13 +149,13 @@ public class CmdUtil {
 					strReturn.append(readLine).append("\n");
 				}
 			} catch (IOException e) {
-				System.out.println("execUnixCommand return2 :" + e.getMessage());
+				logger.error("execUnixCommand return2 :" + e.getMessage());
 				throw new Exception("execUnixCommand command error 2!!!:" + command);
 			}
-			System.out.println("execUnixCommand return :" + strReturn);
+			logger.debug("execUnixCommand return :" + strReturn);
 		}
 		return strReturn.toString();
-	}	
+	}
 
 	public static String loadStream(InputStream s) throws Exception {
 		BufferedReader br = new BufferedReader(new InputStreamReader(s));

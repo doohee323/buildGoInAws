@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
+  <timestamp key="bySecond" datePattern="yyyyMMddHH" />
+
+  <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <prudent>true</prudent>
+    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+      <fileNamePattern>/var/log/awsSpot/%d{yyyy-MM-dd}.log
+      </fileNamePattern>
+      <maxHistory>15</maxHistory>
+    </rollingPolicy>
+    <encoder>
+      <pattern>[[%d{yyyy-MM-dd HH:mm:ss.SSS}]] - %msg%n</pattern>
+    </encoder>
+  </appender>
+
+  <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder>
+      <pattern>[[%coloredLevel %logger{15}]] - %message%n%xException{5}</pattern>
+    </encoder>
+  </appender>
+
+  <appender name="SSH" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <prudent>true</prudent>
+    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+      <fileNamePattern>/var/log/awsSpot/ssh-%d{yyyy-MM-dd}.log
+      </fileNamePattern>
+    </rollingPolicy>
+    <maxHistory>15</maxHistory>
+    <encoder>
+      <pattern>%msg%n</pattern>
+    </encoder>
+  </appender>
+
+  <logger name="com.tz" level="DEBUG" />
+
+  <logger name="com.tz.SSHUtil" level="INFO" additivity="false">
+    <appender-ref ref="SSH" />
+  </logger>
+	
+	<!-- Off these ones as they are annoying, and anyway we manage configuration 
+		ourself -->
+  <logger name="com.avaje.ebean.config.PropertyMapLoader" level="OFF" />
+  <logger name="com.avaje.ebeaninternal.server.core.XmlConfigLoader" level="OFF" />
+  <logger name="com.avaje.ebeaninternal.server.lib.BackgroundThread" level="OFF" />
+  <logger name="com.gargoylesoftware.htmlunit.javascript" level="OFF" />
+
+  <root level="DEBUG">
+    <appender-ref ref="STDOUT" />
+    <appender-ref ref="FILE" />
+  </root>
+
+</configuration>

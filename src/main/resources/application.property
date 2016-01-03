@@ -11,5 +11,5 @@ security_group=golang2
 region=us-west-1
 
 username=ubuntu
-pem_file=ubuntu
-
+pem_file=/Users/mac/.ssh/golang2.pem
+cmd_file=commands.json

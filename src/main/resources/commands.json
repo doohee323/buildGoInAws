@@ -1,0 +1,18 @@
+{
+  "list": [
+    {
+      "id": "ls_tmp",
+      "commands": [
+        "cd /tmp",
+        "ls -al"
+      ]
+    },
+    {
+      "id": "ls_bin",
+      "commands": [
+        "cd /bin",
+        "ls -al"
+      ]
+    }
+  ]
+}
