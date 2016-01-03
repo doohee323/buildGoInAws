@@ -66,7 +66,7 @@ sudo unzip ec2-api-tools.zip -d /usr/local/ec2
 export JAVA_HOME=$(/usr/libexec/java_home)
 export EC2_HOME=/usr/local/ec2/ec2-api-tools-1.7.5.1
 ```
-# AWS_ACCESS_KEY / AWS_SECRET_KEY
+# Make ACCESS_KEY / SECRET_KEY
 ```
 # create access-key
 aws iam create-access-key --user-name golang2
@@ -79,7 +79,7 @@ export AWS_SECRET_KEY=
 export PATH=.:$PATH:$EC2_HOME/bin 
 ```
 
-# create user
+# Create user
 ```
 #aws iam get-user --user-name golang2
 aws iam create-user --user-name golang2
