@@ -15,6 +15,17 @@ After using the instances, they'wll be terminated automatically.
 -. make pem file for AWS
 ```
 
+# How to run
+```
+	cd ~/runAwsSpot
+	mvn clean package assembly:single -DskipTests=true
+	cd ~/runAwsSpot/target
+	java -jar runAwsSpot-0.0.1-SNAPSHOT-jar-with-dependencies.jar spot ls_tmp
+	
+	# spot: spot / common
+	# ls_tmp: commands group id
+```
+
 # configuration example 
 ```
 (/runAwsSpot/src/main/resources/application.property)
@@ -38,7 +49,7 @@ cmd_file=commands.json	-> predefined scripts which you want to run in the spot i
 ```
 (/runAwsSpot/src/main/resources/commands.json)
 {
-  "list": [		-> fixed
+  "awsSpot": [		-> fixed
     {
       "id": "ls_tmp",	-> commands group id
       "commands": [		-> command list

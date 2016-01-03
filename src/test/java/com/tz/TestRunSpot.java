@@ -15,11 +15,10 @@ import org.slf4j.LoggerFactory;
 import junit.framework.TestCase;
 
 public final class TestRunSpot extends TestCase {
-    static final Logger log = LoggerFactory.getLogger(TestRunSpot.class);
+	static final Logger log = LoggerFactory.getLogger(TestRunSpot.class);
 
-    @Test
-    public void testStatsObject() throws IOException, FileNotFoundException {
-    	RunSpot build = new RunSpot();
-    	build.main(null);
-    }
+	@Test
+	public void testStatsObject() throws IOException, FileNotFoundException {
+		RunSpot.main(null);
+	}
 }

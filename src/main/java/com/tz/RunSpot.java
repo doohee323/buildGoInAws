@@ -14,10 +14,13 @@ import org.slf4j.LoggerFactory;
 public class RunSpot {
 	private static Logger logger = LoggerFactory.getLogger(RunSpot.class);
 
+	final static int nMaxCheck = 20;
+	final static int nWait = 60000; // 1 minutes
+
 	private String accesskey = "";
 	private String secretkey = "";
 
-	private int nInstanceNum = 0;
+	private int instance_num = 0;
 	private String common_spec = "";
 	private String spot_spec = "";
 
@@ -32,16 +35,17 @@ public class RunSpot {
 	private String pem_file = "";
 	private String cmd_file = "";
 
+	private JSONArray cmdConfig = null;
+
 	private List<String> instanceIds = new ArrayList<String>();
 
 	// 0) create master
 	public static void main(String[] arg) {
 		try {
-			String instanceType = "spot"; // common / spot
 			RunSpot runSpot = new RunSpot();
 			runSpot.init();
-			runSpot.getInstance(instanceType);
-			runSpot.runApp("ls_tmp");	// commands group id
+			runSpot.getInstance(arg[0]); // common / spot
+			runSpot.runScript(arg[1]); // commands group id
 			runSpot.terminateInstance();
 		} catch (Exception e) {
 			logger.error(e.getMessage());
@@ -56,8 +60,7 @@ public class RunSpot {
 		accesskey = config.getProperty("accesskey");
 		secretkey = config.getProperty("secretkey");
 
-		String instanceNum = config.getProperty("instance_num");
-		nInstanceNum = Integer.parseInt(instanceNum);
+		instance_num = Integer.parseInt(config.getProperty("instance_num"));
 		common_spec = config.getProperty("common_spec");
 		spot_spec = config.getProperty("spot_spec");
 
@@ -71,49 +74,52 @@ public class RunSpot {
 		username = config.getProperty("username");
 		pem_file = config.getProperty("pem_file");
 		cmd_file = config.getProperty("cmd_file");
+
+		cmdConfig = ConfigUtil.getConfig(cmd_file);
 	}
 
 	public int getInstance(String instanceType) {
 		try {
 			// 0. instance exist check
-			boolean nReady = false;
+			boolean bReady = false;
 			int nCode = checkInstance(instanceType);
-			if (nCode < nInstanceNum) {
+			if (nCode < instance_num) {
 				// 1. create instance
-				int cnt = nInstanceNum - nCode;
+				int cnt = instance_num - nCode;
 				String cmd = "";
 				if (instanceType.equals("common")) {
 					cmd = "ec2-run-instances -O " + accesskey + " -W " + secretkey;
-					cmd += " --region " + region + " " + ami_id + " -g " + security_group + " -n " + cnt + " -k " + keypair;
+					cmd += " --region " + region + " " + ami_id + " -g " + security_group + " -n " + cnt + " -k "
+							+ keypair;
 					cmd += " -t " + common_spec;
 				} else if (instanceType.equals("spot")) {
 					cmd = "ec2-request-spot-instances -O " + accesskey + " -W " + secretkey + " --price " + spot_price;
-					cmd += " --region " + region + " " + ami_id + " -g " + security_group + " -n " + cnt + " -k " + keypair
-							+ " -t " + spot_spec;
+					cmd += " --region " + region + " " + ami_id + " -g " + security_group + " -n " + cnt + " -k "
+							+ keypair + " -t " + spot_spec;
 				}
 
 				CmdUtil.execUnixCommand(cmd);
-				Thread.sleep(60000); // 3 minutes
+				Thread.sleep(nWait * 3);
 				// 2. checking
 				nCode = 0;
-				int nMaxCheck = 20, nCnt = 0;
-				while (nCode < nInstanceNum && nCnt < nMaxCheck) {
+				int nCnt = 0;
+				while (nCode < instance_num && nCnt < nMaxCheck) {
 					nCode = checkInstance(instanceType);
 					nCnt++;
 					if (nCode == -1) {
 						return nCode; // error!
 					}
-					if (nCode == nInstanceNum) {
-						nReady = true;
+					if (nCode == instance_num) {
+						bReady = true;
 					} else {
-						Thread.sleep(60000); // 1 minutes
+						Thread.sleep(nWait);
 					}
 				}
-			} else if (nCode == nInstanceNum) {
-				nReady = true;
+			} else if (nCode == instance_num) {
+				bReady = true;
 			}
-			if (nReady) {
-				return nInstanceNum;
+			if (bReady) {
+				return instance_num;
 			} else {
 				return nCode;
 			}
@@ -125,13 +131,12 @@ public class RunSpot {
 	}
 
 	// 3. execute app.
-	public void runApp(String id) throws Exception {
+	public void runScript(String id) throws Exception {
 		Map<String, String> hostInfo = new HashMap<String, String>();
 		hostInfo.put("username", username);
 		hostInfo.put("pem_file", pem_file);
 
-		JSONArray jarry = ConfigUtil.getConfig(cmd_file);
-		for (Object object : jarry) {
+		for (Object object : cmdConfig) {
 			JSONObject aJson = (JSONObject) object;
 			if (id.equals(aJson.get("id").toString())) {
 				JSONArray commands = (JSONArray) aJson.get("commands");
@@ -233,8 +238,8 @@ public class RunSpot {
 		if (instanceIds.size() == 0) {
 			return 0;
 		} else {
-			if (instanceIds.size() == nInstanceNum) {
-				return nInstanceNum;
+			if (instanceIds.size() == instance_num) {
+				return instance_num;
 			}
 		}
 		return -1;
