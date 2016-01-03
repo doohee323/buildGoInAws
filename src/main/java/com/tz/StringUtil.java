@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
  */
 public class StringUtil {
 
-	private Logger logger = LoggerFactory.getLogger(StringUtil.class);
+	private static Logger logger = LoggerFactory.getLogger(StringUtil.class);
 
 	/**
 	 * <pre>
@@ -179,6 +179,7 @@ public class StringUtil {
 			}
 			result = strBuf.toString();
 		} catch (Exception e) {
+			logger.error(e.getMessage());
 			throw new Exception("[StringUtil][replace]" + e.getMessage(), e);
 		}
 		return result;

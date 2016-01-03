@@ -33,19 +33,7 @@ public class SSHUtil {
 		List<String> commands = new ArrayList<String>();
 		// commands.add(""); upload file
 		commands.add("sudo su");
-		commands.add("su - tajo");
-		commands.add("cd /home/tajo/tajo/bin/");
-		commands.add("./tsql");
-
-		String sql = "CREATE EXTERNAL TABLE dual_cnt (CNT text)";
-		sql += "USING CSV LOCATION 's3n://tz-tajo/test/dual_cnt';";
-		commands.add(sql);
-
-		sql = "DROP TABLE dual_cnt;";
-		commands.add(sql);
-
-		sql = "INSERT INTO dual_cnt SELECT 1 AS CNT from USERS limit 1";
-		commands.add(sql);
+		commands.add("ls -al");
 
 		SSHUtil util = new SSHUtil();
 		util.shell(hostInfo, commands);

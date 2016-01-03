@@ -11,8 +11,8 @@ import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class GoBuild {
-	private static Logger logger = LoggerFactory.getLogger(GoBuild.class);
+public class RunSpot {
+	private static Logger logger = LoggerFactory.getLogger(RunSpot.class);
 
 	private String accesskey = "";
 	private String secretkey = "";
@@ -24,7 +24,7 @@ public class GoBuild {
 	private String ami_id = "";
 	private String spot_price = "";
 
-	private String key = "";
+	private String keypair = "";
 	private String security_group = "";
 	private String region = "";
 
@@ -38,11 +38,11 @@ public class GoBuild {
 	public static void main(String[] arg) {
 		try {
 			String instanceType = "spot"; // common / spot
-			GoBuild gobuild = new GoBuild();
-			gobuild.init();
-			gobuild.getInstance(instanceType);
-			gobuild.runApp("ls_tmp");
-			gobuild.terminateInstance();
+			RunSpot runSpot = new RunSpot();
+			runSpot.init();
+			runSpot.getInstance(instanceType);
+			runSpot.runApp("ls_tmp");	// commands group id
+			runSpot.terminateInstance();
 		} catch (Exception e) {
 			logger.error(e.getMessage());
 			e.printStackTrace();
@@ -56,7 +56,7 @@ public class GoBuild {
 		accesskey = config.getProperty("accesskey");
 		secretkey = config.getProperty("secretkey");
 
-		String instanceNum = config.getProperty("instanceNum");
+		String instanceNum = config.getProperty("instance_num");
 		nInstanceNum = Integer.parseInt(instanceNum);
 		common_spec = config.getProperty("common_spec");
 		spot_spec = config.getProperty("spot_spec");
@@ -64,7 +64,7 @@ public class GoBuild {
 		ami_id = config.getProperty("ami_id");
 		spot_price = config.getProperty("spot_price");
 
-		key = config.getProperty("key");
+		keypair = config.getProperty("keypair");
 		security_group = config.getProperty("security_group");
 		region = config.getProperty("region");
 
@@ -84,11 +84,11 @@ public class GoBuild {
 				String cmd = "";
 				if (instanceType.equals("common")) {
 					cmd = "ec2-run-instances -O " + accesskey + " -W " + secretkey;
-					cmd += " --region " + region + " " + ami_id + " -g " + security_group + " -n " + cnt + " -k " + key;
+					cmd += " --region " + region + " " + ami_id + " -g " + security_group + " -n " + cnt + " -k " + keypair;
 					cmd += " -t " + common_spec;
 				} else if (instanceType.equals("spot")) {
 					cmd = "ec2-request-spot-instances -O " + accesskey + " -W " + secretkey + " --price " + spot_price;
-					cmd += " --region " + region + " " + ami_id + " -g " + security_group + " -n " + cnt + " -k " + key
+					cmd += " --region " + region + " " + ami_id + " -g " + security_group + " -n " + cnt + " -k " + keypair
 							+ " -t " + spot_spec;
 				}
 
@@ -96,7 +96,7 @@ public class GoBuild {
 				Thread.sleep(60000); // 3 minutes
 				// 2. checking
 				nCode = 0;
-				int nMaxCheck = 3, nCnt = 0;
+				int nMaxCheck = 20, nCnt = 0;
 				while (nCode < nInstanceNum && nCnt < nMaxCheck) {
 					nCode = checkInstance(instanceType);
 					nCnt++;
@@ -143,15 +143,19 @@ public class GoBuild {
 				}
 				// 4. execute script.
 				for (int i = 0; i < instanceIds.size(); i++) {
-					hostInfo.put("host", getInstanceId(instanceIds.get(i)));
-					SSHUtil util = new SSHUtil();
-					String output = util.shell(hostInfo, commands2);
-					logger.debug("=[output]=========" + output);
+					String host = getInstanceId(instanceIds.get(i));
+					logger.debug("=[host]=========" + host);
+					if (!host.equals("")) {
+						hostInfo.put("host", host);
+						SSHUtil util = new SSHUtil();
+						String output = util.shell(hostInfo, commands2);
+						logger.debug("=[output]=========" + output);
+					}
 				}
 			}
 		}
 	}
-	
+
 	// 5. delete instances
 	public void terminateInstance() throws Exception {
 		for (int i = 0; i < instanceIds.size(); i++) {
@@ -163,10 +167,14 @@ public class GoBuild {
 					cmd = "ec2-terminate-instances " + instanceId + " --region=" + region;
 					CmdUtil.execUnixCommand(cmd);
 				}
+				String requestId = str.split("\t")[1];
+				cmd = "ec2-cancel-spot-instance-requests " + requestId + " --region=" + region;
+				CmdUtil.execUnixCommand(cmd);
 			}
 		}
 	}
 
+	@SuppressWarnings("unused")
 	private String replaceVariables(String orgStr, Map<String, Object> var) {
 		if (var != null) {
 			Object[] key = var.keySet().toArray();
@@ -208,7 +216,7 @@ public class GoBuild {
 			String rslt = CmdUtil.execUnixCommand(cmd);
 			String arry[] = rslt.split(splitFlag);
 			for (int i = 0; i < arry.length; i++) {
-				if (!arry[i].equals("") && arry[i].indexOf("terminated") == -1) {
+				if (!arry[i].equals("") && arry[i].split("\t")[5].equals("active")) {
 					if (instanceType.equals("common")) {
 						arry[i] = arry[i].substring(arry[i].indexOf("INSTANCE") + "INSTANCE ".length(),
 								arry[i].length());
