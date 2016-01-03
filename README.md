@@ -1,11 +1,11 @@
-# runAwsSpot
+# RunAwsSpot
 
 It's for running AWS spot instance management (launch && use && terminate).
 You can define the condition for AWS spot instance such as price, region, instance type, and instance number using AMI which you made.
 Once the instances are launched, you can use the instances through predefined scripts in commands.json.
-After using the instances, they'wll be terminated automatically.
+After using the instances, they'll be terminated automatically.
 
-# required
+# Required
 ```
 -. AMI: instance image which you want to make  
 -. install aws cli
@@ -26,7 +26,7 @@ After using the instances, they'wll be terminated automatically.
 	# ls_tmp: commands group id
 ```
 
-# configuration example 
+# Configuration  
 ```
 (/runAwsSpot/src/main/resources/application.property)
 accesskey=
@@ -45,7 +45,7 @@ pem_file=/Users/mac/.ssh/golang2.pem
 cmd_file=commands.json	-> predefined scripts which you want to run in the spot instances
 ```
 
-# commands.json example 
+# Example for commands.json  
 ```
 (/runAwsSpot/src/main/resources/commands.json)
 {
@@ -68,7 +68,7 @@ cmd_file=commands.json	-> predefined scripts which you want to run in the spot i
 }
 ```
 
-# Install aws cli
+# Install AWS CLI
 ```
 sudo mkdir /usr/local/ec2
 sudo wget http://s3.amazonaws.com/ec2-downloads/ec2-api-tools.zip
@@ -112,7 +112,7 @@ aws ec2 authorize-security-group-ingress --group-name golang2 --protocol tcp --p
 #aws ec2 delete-security-group --group-name golang2
 ```
 
-# check regions
+# Check regions
 ```
 ec2-describe-regions
 ec2-describe-availability-zones --region us-west-1
