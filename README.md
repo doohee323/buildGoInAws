@@ -1,7 +1,7 @@
 # RunAwsInst
 
-It's for running AWS spot instance management (launch && use && terminate).
-You can define the condition for AWS spot instance such as price, region, instance type, and instance number using AMI which you made.
+It's for running AWS instance management (launch && use && terminate).
+You can define the condition for AWS instance such as price, region, instance type, and instance number using AMI which you made.
 Once the instances are launched, you can use the instances through predefined scripts in commands.json.
 After using the instances, they'll be terminated automatically.
 
@@ -42,7 +42,7 @@ region=us-west-1	-> check with ec2-describe-regions
 
 username=ubuntu	 -> username for ssh access (ubuntu or ec2_user)  
 pem_file=/Users/mac/.ssh/golang2.pem
-cmd_file=commands.json	-> predefined scripts which you want to run in the spot instances
+cmd_file=commands.json	-> predefined scripts which you want to run in the instances
 ```
 
 # Example for commands.json  
