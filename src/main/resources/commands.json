@@ -1,5 +1,5 @@
 {
-  "awsSpot": [
+  "awsInst": [
     {
       "id": "ls_tmp",
       "commands": [

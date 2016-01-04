@@ -104,7 +104,7 @@ public final class ConfigUtil {
 	public static JSONArray getConfig(String xmlFile) {
 		try {
 			Properties pr = parseJson(xmlFile);
-			return (JSONArray) pr.get("awsSpot");
+			return (JSONArray) pr.get("awsInst");
 		} catch (Exception e) {
 			logger.error("getConfig error!: " + e.getMessage());
 		}

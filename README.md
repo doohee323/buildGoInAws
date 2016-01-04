@@ -1,4 +1,4 @@
-# RunAwsSpot
+# RunAwsInst
 
 It's for running AWS spot instance management (launch && use && terminate).
 You can define the condition for AWS spot instance such as price, region, instance type, and instance number using AMI which you made.
@@ -17,10 +17,10 @@ After using the instances, they'll be terminated automatically.
 
 # How to run
 ```
-	cd ~/runAwsSpot
+	cd ~/runAwsInst
 	mvn clean package assembly:single -DskipTests=true
-	cd ~/runAwsSpot/target
-	java -jar runAwsSpot-0.0.1-SNAPSHOT-jar-with-dependencies.jar spot ls_tmp
+	cd ~/runAwsInst/target
+	java -jar runAwsInst-0.0.1-SNAPSHOT-jar-with-dependencies.jar spot ls_tmp
 	
 	# spot: spot / common
 	# ls_tmp: commands group id
@@ -28,7 +28,7 @@ After using the instances, they'll be terminated automatically.
 
 # Configuration  
 ```
-(/runAwsSpot/src/main/resources/application.property)
+(/runAwsInst/src/main/resources/application.property)
 accesskey=
 secretkey=
 instance_num=1	-> the instance number which you want to launch 
@@ -47,9 +47,9 @@ cmd_file=commands.json	-> predefined scripts which you want to run in the spot i
 
 # Example for commands.json  
 ```
-(/runAwsSpot/src/main/resources/commands.json)
+(/runAwsInst/src/main/resources/commands.json)
 {
-  "awsSpot": [		-> fixed
+  "awsInst": [		-> fixed
     {
       "id": "ls_tmp",	-> commands group id
       "commands": [		-> command list
