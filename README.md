@@ -16,12 +16,12 @@ After using the instances, they'll be terminated automatically.
 
 # How to run
 ```
-	cd ~/runAwsInst
-	mvn clean package assembly:single -DskipTests=true
-	cd ~/runAwsInst/target
-	java -jar runAwsInst-0.0.1-SNAPSHOT-jar-with-dependencies.jar ls_tmp
-	
-	# ls_tmp: commands id
+cd ~/runAwsInst
+mvn clean package assembly:single -DskipTests=true
+cd ~/runAwsInst/target
+java -jar runAwsInst-0.0.1-SNAPSHOT-jar-with-dependencies.jar ls_tmp
+
+# ls_tmp: commands id
 ```
 
 # Configuration  
@@ -121,7 +121,6 @@ export AWS_SECRET_KEY=
 export AWS_DEFAULT_REGION=us-west-1
 
 export PATH=.:/bin:/usr/bin:/usr/sbin:$EC2_HOME/bin 
-
 ```
 # Make ACCESS_KEY / SECRET_KEY
 ```
