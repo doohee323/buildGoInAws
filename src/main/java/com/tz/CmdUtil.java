@@ -72,7 +72,7 @@ public class CmdUtil {
 	 * @return
 	 * @throws Exception
 	 */
-	public static String execUnixCommand(String command) throws Exception {
+	public static String execCommand(String command) throws Exception {
 		logger.debug("execUnixCommand command:" + command);
 		// ProcessBuilder pb = new ProcessBuilder();
 		// Map<String, String> envMap = pb.environment();
