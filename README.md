@@ -11,7 +11,6 @@ After using the instances, they'll be terminated automatically.
 -. install aws cli
 -. make AWS_ACCESS_KEY / AWS_SECRET_KEY
 -. make AWS keypair / security group
--. make AWS keypair / security group
 -. make pem file for AWS
 ```
 
