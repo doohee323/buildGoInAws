@@ -29,42 +29,84 @@ After using the instances, they'll be terminated automatically.
 # Configuration  
 ```
 (/runAwsInst/src/main/resources/application.property)
+
 accesskey=
 secretkey=
-instance_num=1	-> the instance number which you want to launch 
-ami_id=ami-6ca2c80c
-spot_price=0.3
-
-spot_spec=m3.medium
-keypair=golang2
-security_group=golang2
-region=us-west-1	-> check with ec2-describe-regions
-
-username=ubuntu	 -> username for ssh access (ubuntu or ec2_user)  
-pem_file=/Users/mac/.ssh/golang2.pem
 cmd_file=commands.json	-> predefined scripts which you want to run in the instances
 ```
 
 # Example for commands.json  
 ```
 (/runAwsInst/src/main/resources/commands.json)
+
 {
-  "awsInst": [		-> fixed
-    {
-      "id": "ls_tmp",	-> commands group id
-      "commands": [		-> command list
-        "cd /tmp",
-        "ls -al"
-      ]
-    },
-    {
-      "id": "ls_bin",
-      "commands": [
-        "cd /bin",
-        "ls -al"
-      ]
-    }
-  ]
+	"awsInst": 
+	[
+		{
+			"ls_tmp": 
+			{
+				"target": 
+				[
+					{
+						"keypair": "golang2",
+						"security_group": "golang2",
+						"pem_file": "/Users/dhong/.ssh/golang2.pem",
+						"ami_id": "ami-6ca2c80c",
+						"instance_type": "spot",		-> instance type (spot / common)
+						"instance_num": 1,				-> the instance number which you want to launch
+						"inst_spec": "m3.medium",
+						"cli_args": "--price 0.3",
+						"region": "us-west-1",			-> check with ec2-describe-regions
+						"username": "ubuntu"			-> username for ssh access (ubuntu or ec2_user)  
+					},
+
+					{
+						"keypair": "golang1",
+						"security_group": "golang1",
+						"pem_file": "/Users/dhong/.ssh/golang1.pem",
+						"ami_id": "ami-10cbd371",
+						"instance_type": "spot",
+						"instance_num": 1,
+						"inst_spec": "m3.medium",
+						"cli_args": "--price 0.3",
+						"region": "us-west-2",
+						"username": "ubuntu"
+					}
+				],
+
+				"commands": 
+				[
+					"cd /tmp",
+					"ls -al"
+				]
+			},
+
+			"ls_tmp2": 
+			{
+				"target": 
+				[
+					{
+						"keypair": "golang2",
+						"security_group": "golang2",
+						"pem_file": "/Users/dhong/.ssh/golang2.pem",
+						"ami_id": "ami-6ca2c80c",
+						"instance_type": "common",
+						"instance_num": 2,
+						"inst_spec": "m1.medium",
+						"cli_args": "",
+						"region": "us-west-1",
+						"username": "ubuntu"
+					}
+				],
+
+				"commands": 
+				[
+					"cd /tmp",
+					"ls -al"
+				]
+			}
+		}
+	]
 }
 ```
 

@@ -1,18 +1,69 @@
 {
-  "awsInst": [
-    {
-      "id": "ls_tmp",
-      "commands": [
-        "cd /tmp",
-        "ls -al"
-      ]
-    },
-    {
-      "id": "ls_bin",
-      "commands": [
-        "cd /bin",
-        "ls -al"
-      ]
-    }
-  ]
+	"awsInst": 
+	[
+		{
+			"ls_tmp": 
+			{
+				"target": 
+				[
+					{
+						"keypair": "golang2",
+						"security_group": "golang2",
+						"pem_file": "/Users/dhong/.ssh/golang2.pem",
+						"ami_id": "ami-6ca2c80c",
+						"instance_type": "spot",
+						"instance_num": 1,
+						"inst_spec": "m3.medium",
+						"cli_args": "--price 0.3",
+						"region": "us-west-1",
+						"username": "ubuntu"
+					},
+
+					{
+						"keypair": "golang1",
+						"security_group": "golang1",
+						"pem_file": "/Users/dhong/.ssh/golang1.pem",
+						"ami_id": "ami-10cbd371",
+						"instance_type": "spot",
+						"instance_num": 1,
+						"inst_spec": "m3.medium",
+						"cli_args": "--price 0.3",
+						"region": "us-west-2",
+						"username": "ubuntu"
+					}
+				],
+
+				"commands": 
+				[
+					"cd /tmp",
+					"ls -al"
+				]
+			},
+
+			"ls_tmp2": 
+			{
+				"target": 
+				[
+					{
+						"keypair": "golang2",
+						"security_group": "golang2",
+						"pem_file": "/Users/dhong/.ssh/golang2.pem",
+						"ami_id": "ami-6ca2c80c",
+						"instance_type": "common",
+						"instance_num": 2,
+						"inst_spec": "m1.medium",
+						"cli_args": "",
+						"region": "us-west-1",
+						"username": "ubuntu"
+					}
+				],
+
+				"commands": 
+				[
+					"cd /tmp",
+					"ls -al"
+				]
+			}
+		}
+	]
 }

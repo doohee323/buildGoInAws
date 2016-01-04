@@ -25,6 +25,7 @@ import org.json.simple.parser.JSONParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@SuppressWarnings("unused")
 public final class ConfigUtil {
 
 	private static Logger logger = LoggerFactory.getLogger(ConfigUtil.class);
@@ -87,17 +88,21 @@ public final class ConfigUtil {
 	}
 
 	public static void loadJson(Properties appProperty, String parent, JSONObject json) {
-		for (final Iterator<?> iterator = json.keySet().iterator(); iterator.hasNext();) {
-			final String key = (String) iterator.next();
-			if (json.get(key) instanceof JSONObject) {
-				loadJson(appProperty, key, (JSONObject) json.get(key));
-			} else {
-				if (parent == null) {
-					appProperty.put(key, json.get(key));
+		try {
+			for (final Iterator<?> iterator = json.keySet().iterator(); iterator.hasNext();) {
+				final String key = (String) iterator.next();
+				if (json.get(key) instanceof JSONObject) {
+					loadJson(appProperty, key, (JSONObject) json.get(key));
 				} else {
-					appProperty.put(parent + "." + key, json.get(key));
+					if (parent == null) {
+						appProperty.put(key, json.get(key));
+					} else {
+						appProperty.put(parent + "." + key, json.get(key));
+					}
 				}
 			}
+		} catch (Exception e) {
+			logger.error("getConfig error!: " + e.getMessage());
 		}
 	}
 
@@ -138,6 +143,7 @@ public final class ConfigUtil {
 	 * <pre>
 	 * </pre>
 	 */
+	@SuppressWarnings("resource")
 	public static StringBuffer getFromFile(String fileName, String strChar) throws IOException {
 		if (strChar == null) {
 			Scanner scanner = new Scanner(new File(fileName)).useDelimiter("\\Z");
