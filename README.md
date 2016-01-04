@@ -20,10 +20,9 @@ After using the instances, they'll be terminated automatically.
 	cd ~/runAwsInst
 	mvn clean package assembly:single -DskipTests=true
 	cd ~/runAwsInst/target
-	java -jar runAwsInst-0.0.1-SNAPSHOT-jar-with-dependencies.jar spot ls_tmp
+	java -jar runAwsInst-0.0.1-SNAPSHOT-jar-with-dependencies.jar ls_tmp
 	
-	# spot: spot / common
-	# ls_tmp: commands group id
+	# ls_tmp: commands id
 ```
 
 # Configuration  
@@ -43,7 +42,7 @@ cmd_file=commands.json	-> predefined scripts which you want to run in the instan
 	"awsInst": 
 	[
 		{
-			"ls_tmp": 
+			"ls_tmp": 		-> commands id
 			{
 				"target": 
 				[
@@ -118,6 +117,12 @@ sudo unzip ec2-api-tools.zip -d /usr/local/ec2
 
 export JAVA_HOME=$(/usr/libexec/java_home)
 export EC2_HOME=/usr/local/ec2/ec2-api-tools-1.7.5.1
+export AWS_ACCESS_KEY=
+export AWS_SECRET_KEY=
+export AWS_DEFAULT_REGION=us-west-1
+
+export PATH=.:/bin:/usr/bin:/usr/sbin:$EC2_HOME/bin 
+
 ```
 # Make ACCESS_KEY / SECRET_KEY
 ```
